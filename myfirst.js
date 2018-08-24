@@ -46,16 +46,61 @@ app.get('/', function (req, res, next) {
                     res.end(JSON.stringify(obj));
                 }
             }, (error) => console.log(err));
-    console.log('CORS-enabled web server listening on port 80')
 })
 
 app.get('/show_product', function (req, res, next) {
     var q = url.parse(req.url, true).query;
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    var obj = {'cars': q, 'id': '321'}
-    res.end(JSON.stringify(obj));
+    var path = 'https://www.autotrader.co.uk/classified/advert/' + q.id + '?onesearchad=New&onesearchad=Nearly%20New&onesearchad=Used&postcode=cv12ue&advertising-location=at_cars&sort=sponsored&radius=1501&page=1';
+    axios.get(path)
+            .then((response) => {
+                if (response.status === 200) {
+                    const html = response.data;
+                    const $ = cheerio.load(html);
+                    var overview = [];
+                    var thumbs = [];
+                    var details = [];
+                    var phones = [];
+                    $('ul.keyFacts__list li').each(function (i, elem) {
+                        overview[i] = {
+                            view: $(this).html(),
+                        }
+                    });
+                    $('.fpaImages__thumbs figure.fpaImages__thumb').each(function (i, elem) {
+                        thumbs[i] = {
+                            thumb: $(this).find('img').data('src'),
+                        }
+                    });
+                    $('.seller_private__telephone').each(function (i, elem) {
+                        phones[i] = {
+                            phone: $(this).text(),
+                        }
+                    });
+                    if(phones){
+                        phones = $(html).find('.seller_private__telephone').text();
+                    }
+                    $('section.fpaSpecifications .fpaSpecifications__expandingSection').each(function (i, elem) {
+                        details[i] = {
+                            detail_heading: $(this).find('h3').text(),
+                            detail: $(this).find('.fpaSpecifications__list').html(),
+                        }
+                    });
+                    var data = {
+                        overview: overview,
+                        desc: $(html).find(".fpa-description-text").text(),
+                        thumbs: thumbs,
+                        title: $(html).find("h1 span.vehicle-title__text").text(),
+                        phones: phones,
+                        price: $(html).find(".vehicle-price-info--total p").text(),
+                        distance: $(html).find(".seller_private__location").text(),
+                        details: details,
+                    }
+                    var obj = {'cars': q, 'data': data}
+                    res.writeHead(200, {'Content-Type': 'application/json'});
+                    res.end(JSON.stringify(obj));
+                }
+            }, (error) => console.log(err));
 })
 
-app.listen(8000, function () {
+app.listen(2222, function () {
     console.log('CORS-enabled web server listening on port 80')
 })
