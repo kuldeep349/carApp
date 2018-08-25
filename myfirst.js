@@ -11,7 +11,7 @@ app.use(cors())
 app.get('/', function (req, res, next) {
     var q = url.parse(req.url, true).query;
     //  var path = 'https://www.autotrader.co.uk/car-search?sort=monthly-price-asc&radius=' + q.radius + '&postcode=' + q.postcode + '&onesearchad=Used&onesearchad=Nearly%20New&onesearchad=New&make=' + q.make + '&model=' + q.model + '&aggregatedTrim=SR&min-monthly-price=' + q.min_monthly_price + '&max-monthly-price=' + q.max_monthly_price + '&deposit=' + q.deposit + '&term=36&yearly-mileage=' + q.yearly_mileage;
-    var path = 'https://www.autotrader.co.uk/car-search?postcode=cv12ue&radius=' + q.radius + '&make=' + q.make + '&page=' + q.page + '&sort=default&onesearchad=Used&onesearchad=Nearly%20New&onesearchad=New&search-target=usedcars&colour=' + q.colour + '&fuel-type=' + q.fuel_type;
+    var path = 'https://www.autotrader.co.uk/car-search?postcode=cv12ue&radius=' + q.radius + '&make=' + q.make + '&model=' + q.model + '&page=' + q.page + '&sort=default&onesearchad=Used&onesearchad=Nearly%20New&onesearchad=New&search-target=usedcars&colour=' + q.colour + '&fuel-type=' + q.fuel_type + '&price-from=' + q.price_from + '&price-to=' + q.price_to + '&onesearchad=' + q.onesearchad;
     axios.get(path)
             .then((response) => {
                 if (response.status === 200) {
@@ -75,7 +75,7 @@ app.get('/show_product', function (req, res, next) {
                             phone: $(this).text(),
                         }
                     });
-                    if(phones){
+                    if (phones) {
                         phones = $(html).find('.seller_private__telephone').text();
                     }
                     $('section.fpaSpecifications .fpaSpecifications__expandingSection').each(function (i, elem) {
