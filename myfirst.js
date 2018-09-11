@@ -11,7 +11,7 @@ app.use(cors())
 app.get('/', function (req, res, next) {
     var q = url.parse(req.url, true).query;
     //  var path = 'https://www.autotrader.co.uk/car-search?sort=monthly-price-asc&radius=' + q.radius + '&postcode=' + q.postcode + '&onesearchad=Used&onesearchad=Nearly%20New&onesearchad=New&make=' + q.make + '&model=' + q.model + '&aggregatedTrim=SR&min-monthly-price=' + q.min_monthly_price + '&max-monthly-price=' + q.max_monthly_price + '&deposit=' + q.deposit + '&term=36&yearly-mileage=' + q.yearly_mileage;
-    var path = 'https://www.autotrader.co.uk/car-search?postcode=cv12ue&radius=' + q.radius + '&make=' + q.make + '&model=' + q.model + '&page=' + q.page + '&sort=default&onesearchad=Used&onesearchad=Nearly%20New&onesearchad=New&search-target=usedcars&colour=' + q.colour + '&fuel-type=' + q.fuel_type + '&price-from=' + q.price_from + '&price-to=' + q.price_to + '&onesearchad=' + q.onesearchad;
+    var path = 'https://www.autotrader.co.uk/car-search?postcode='+q.postcode+'&radius=' + q.radius + '&make=' + q.make + '&model=' + q.model + '&page=' + q.page + '&sort=default&colour=' + q.colour + '&fuel-type=' + q.fuel_type + '&price-from=' + q.price_from + '&price-to=' + q.price_to + '&onesearchad=' + q.onesearchad+'&year-to='+q.year_to+'&year-from='+q.year_from;
     axios.get(path)
             .then((response) => {
                 if (response.status === 200) {
@@ -19,6 +19,7 @@ app.get('/', function (req, res, next) {
                     const $ = cheerio.load(html);
                     let devtoList = [];
                     let pages = [];
+	            let models = [];
                     $('li.search-page__result').each(function (i, elem) {
                         devtoList[i] = {
                             product_id: $(this).attr('id'),
@@ -35,12 +36,18 @@ app.get('/', function (req, res, next) {
                             page: $(this).text(),
                         }
                     });
+	            $('.sf-flyout__scrollable-options').each(function (i, elem) {
+                        models[i] = {
+                            model: $(this).html(),
+                        }
+                    });
                     var meta = {
                         count_products: $(html).find("h1.search-form__count.js-results-count").text(),
                         pages: pages,
                         param: q,
-                        url: path
-                    }
+                        url: path,
+                        models : models[1].model
+                  }
                     res.writeHead(200, {'Content-Type': 'application/json'});
                     var obj = {'cars': devtoList, 'params': meta}
                     res.end(JSON.stringify(obj));
@@ -89,7 +96,7 @@ app.get('/show_product', function (req, res, next) {
                         desc: $(html).find(".fpa-description-text").text(),
                         thumbs: thumbs,
                         title: $(html).find("h1 span.vehicle-title__text").text(),
-                        phones: phones,
+                        phones: $(html).find("section.seller_trade .seller_trade__telephone").text(),
                         price: $(html).find(".vehicle-price-info--total p").text(),
                         distance: $(html).find(".seller_private__location").text(),
                         details: details,
