@@ -97,12 +97,76 @@ app.get('/show_product', function (req, res, next) {
                         thumbs: thumbs,
                         title: $(html).find("h1 span.vehicle-title__text").text(),
                         phones: $(html).find("section.seller_trade .seller_trade__telephone").text(),
+			phone2: $(html).find(".seller_private__telephone").text(),
                         price: $(html).find(".vehicle-price-info--total p").text(),
                         distance: $(html).find(".seller_private__location").text(),
                         details: details,
                     }
                     var obj = {'cars': q, 'data': data}
                     res.writeHead(200, {'Content-Type': 'application/json'});
+                    res.end(JSON.stringify(obj));
+                }
+            }, (error) => console.log(err));
+})
+
+app.get('/more_options', function (req, res, next) {
+    var q = url.parse(req.url, true).query;
+    var path = "https://www.autotrader.co.uk/ajax/search-form-buying/search-option?search-target=usedcars&radius=" + q.radius + "&make=" + q.make + "&model=" + q.model + "&price-from=" + q.price_from + "&price-to=" + q.price_to + "&year-from=" + q.year_from + "&maximum-mileage=" + q.maximum_mileage + "&colour=" + q.colour + "&fuel-type=" + q.fuel_type + "&maximum-badge-engine-size=" + q.maximum_badge_engine_size + "&transmission=" + q.transmission + "&insuranceGroup=" + q.insuranceGroup + "&postcode=" + q.postcode + "&isBuying=true";
+    axios.get(path)
+            .then((response) => {
+                if (response.status === 200) {
+                    var obj = {
+                        seearchButton: response.data.searchButtonLabel,
+                        fields: response.data.fields,
+                        url: req.url,
+                        path : path
+                    }
+                    res.writeHead(200, {'Content-Type': 'application/json'});
+                    res.end(JSON.stringify(obj));
+                }
+            }, (error) => console.log(err));
+})
+app.get('/search_more_products', function (req, res, next) {
+    var q = url.parse(req.url, true).query;
+    var path = "https://www.autotrader.co.uk/car-search?search-target=usedcars&radius=" + q.radius + "&make=" + q.make + "&model=" + q.model + "&price-from=" + q.price_from + "&price-to=" + q.price_to + "&year-from=" + q.year_from + "&maximum-mileage=" + q.maximum_mileage + "&colour=" + q.colour + "&fuel-type=" + q.fuel_type + "&maximum-badge-engine-size=" + q.maximum_badge_engine_size + "&transmission=" + q.transmission + "&insuranceGroup=" + q.insuranceGroup + "&postcode=" + q.postcode + "&page="+q.page+"&quantity_of_doors="+q.quantity_of_doors+"&isBuying=true";
+    axios.get(path)
+            .then((response) => {
+                if (response.status === 200) {
+                    const html = response.data;
+                    const $ = cheerio.load(html);
+                    let devtoList = [];
+                    let pages = [];
+                    let models = [];
+                    $('li.search-page__result').each(function (i, elem) {
+                        devtoList[i] = {
+                            product_id: $(this).attr('id'),
+                            name: $(this).find('h2').text().trim(),
+                            image: $(this).find(".listing-main-image .js-click-handler img").attr('src'),
+                            listings: $(this).find(".listing-key-specs").html(),
+                            title: $(this).find("p.listing-attention-grabber").text(),
+                            description: $(this).find("p").text(),
+                            price: $(this).find(".vehicle-price").text(),
+                        }
+                    });
+                    $('li.pagination--li').each(function (i, elem) {
+                        pages[i] = {
+                            page: $(this).text(),
+                        }
+                    });
+                    $('.sf-flyout__scrollable-options').each(function (i, elem) {
+                        models[i] = {
+                            model: $(this).html(),
+                        }
+                    });
+                    var meta = {
+                        count_products: $(html).find("h1.search-form__count.js-results-count").text(),
+                        pages: pages,
+                        param: q,
+                        url: path,
+                        models: models[1].model
+                    }
+                    res.writeHead(200, {'Content-Type': 'application/json'});
+                    var obj = {'cars': devtoList, 'params': meta}
                     res.end(JSON.stringify(obj));
                 }
             }, (error) => console.log(err));
