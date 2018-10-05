@@ -119,10 +119,8 @@ app.get('/more_options', function (req, res, next) {
        search_target =  q.search_target;
     }
 
-   
-  var path = "https://www.autotrader.co.uk/ajax/search-form-buying/search-option?onesearchad="+search_target+"&radius=" + q.radius + "&make=" + q.make + "&model=" + q.model + "&price-from=" + q.price_from + "&price-to=" + q.price_to + "&year-from=" + q.year_from + "&maximum-mileage=" + q.maximum_mileage + "&colour=" + q.colour + "&fuel-type=" + q.fuel_type + "&maximum-badge-engine-size=" + q.maximum_badge_engine_size + "&transmission=" + q.transmission + "&insuranceGroup=" + q.insuranceGroup + "&postcode=" + q.postcode + "&quantity-of-doors="+q.quantity_of_doors+"&minimum-seats="+q.minimum_seats+"&maximum-seats="+q.maximum_seats+"&fuel-consumption="+q.fuel-consumption+"&seller_type="+q.seller_type+"&annual-tax-cars="+q.annual_tax_cars+"&co2-emissions-cars="+q.co2_emissions_cars+"&isBuying=true";
-  
-console.log(path);  
+  var path = "https://www.autotrader.co.uk/ajax/search-form-buying/search-option?onesearchad="+search_target+"&radius=" + q.radius + "&make=" + q.make + "&model=" + q.model + "&price-from=" + q.price_from + "&price-to=" + q.price_to + "&year-from=" + q.year_from + "&maximum-mileage=" + q.maximum_mileage + "&colour=" + q.colour + "&fuel-type=" + q.fuel_type + "&maximum-badge-engine-size=" + q.maximum_badge_engine_size + "&transmission=" + q.transmission + "&insuranceGroup=" + q.insuranceGroup + "&postcode=" + q.postcode + "&quantity-of-doors="+q.quantity_of_doors+"&minimum-seats="+q.minimum_seats+"&maximum-seats="+q.maximum_seats+"&fuel-consumption="+q.fuel_consumption+"&seller_type="+q.seller_type+"&annual-tax-cars="+q.annual_tax_cars+"&co2-emissions-cars="+q.co2_emissions_cars+"&aggregatedTrim="+q.model_variant+"&body-type="+q.body_type+"&year-to="+q.year_to+"&isBuying=true";
+
     axios.get(path)
             .then((response) => {
                 if (response.status === 200) {
@@ -146,7 +144,7 @@ app.get('/search_more_products', function (req, res, next) {
     else{
         search_target = q.search_target;
     }
-    var path = "https://www.autotrader.co.uk/car-search?onesearchad="+search_target+"&radius=" + q.radius + "&make=" + q.make + "&model=" + q.model + "&price-from=" + q.price_from + "&price-to=" + q.price_to + "&year-from=" + q.year_from + "&maximum-mileage=" + q.maximum_mileage + "&colour=" + q.colour + "&fuel-type=" + q.fuel_type + "&maximum-badge-engine-size=" + q.maximum_badge_engine_size + "&transmission=" + q.transmission + "&insuranceGroup=" + q.insuranceGroup + "&postcode=" + q.postcode + "&page="+q.page+"&quantity_of_doors="+q.quantity_of_doors+"&isBuying=true";
+ var path = "https://www.autotrader.co.uk/car-search?onesearchad="+search_target+"&radius=" + q.radius + "&make=" + q.make + "&model=" + q.model + "&price-from=" + q.price_from + "&price-to=" + q.price_to + "&year-from=" + q.year_from + "&maximum-mileage=" + q.maximum_mileage + "&colour=" + q.colour + "&fuel-type=" + q.fuel_type + "&maximum-badge-engine-size=" + q.maximum_badge_engine_size + "&transmission=" + q.transmission + "&insuranceGroup=" + q.insuranceGroup + "&postcode=" + q.postcode + "&page="+q.page+"&quantity-of-doors="+q.quantity_of_doors+"&minimum-seats="+q.minimum_seats+"&maximum-seats="+q.maximum_seats+"&fuel-consumption="+q.fuel_consumption+"&seller-type="+q.seller_type+"&=annual-tax-cars"+q.annual_tax_cars+"&co2-emissions-cars="+q.co2_emissions_cars+"&sort="+q.sort+"&aggregatedTrim="+q.model_variant+"&body-type="+q.body_type+"&year-to="+q.year_to+"&isBuying=true";
     axios.get(path)
             .then((response) => {
                 if (response.status === 200) {
@@ -157,6 +155,8 @@ app.get('/search_more_products', function (req, res, next) {
                     let models = [];
 		     let year_f = [];
                     let year_t = [];
+		    let model_var = [];
+                    let b_types = [];
                     $('li.search-page__result').each(function (i, elem) {
                         devtoList[i] = {
                             product_id: $(this).attr('id'),
@@ -178,6 +178,18 @@ app.get('/search_more_products', function (req, res, next) {
                             model: $(this).html(),
                         }
                     });
+  		    $(models[2].model).find('.value-button').each(function (i, elem) {
+                        model_var[i] = {
+                            m_v_n: $(this).find('span').text(),
+                            m_v_v: $(this).data('selected-value')
+                        }
+                    });
+                    $(models[3].model).find('.value-button').each(function (i, elem) {
+                        b_types[i] = {
+                            b_t_n: $(this).find('span.term').text(),
+                            b_t_c: $(this).find('span.count').text()
+                        }
+                    });
 	 	    $('.sf-accordion__select-options select[name=year-from]').find('option').each(function (i, elem) {
                         year_f[i] = {
                             year_f_n: $(this).html(),
@@ -194,10 +206,13 @@ app.get('/search_more_products', function (req, res, next) {
                         count_products: $(html).find("h1.search-form__count.js-results-count").text(),
                         pages: pages,
                         param: q,
-                        url: path,
+                        url: req.url,
                         models: models[1].model,
                         year_from: year_f,
                         year_to: year_t,
+			path:path,
+                        model_var: model_var,
+                        body_type: b_types
                     }
                     res.writeHead(200, {'Content-Type': 'application/json'});
                     var obj = {'cars': devtoList, 'params': meta}
