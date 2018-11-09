@@ -69,7 +69,7 @@ app.get('/show_product', function (req, res, next) {
                     var phones = [];
                     $('ul.keyFacts__list li').each(function (i, elem) {
                         overview[i] = {
-                            view: $(this).html(),
+                            view: $(this).text(),
                         }
                     });
                     $('.fpaImages__thumbs figure.fpaImages__thumb').each(function (i, elem) {
@@ -100,6 +100,7 @@ app.get('/show_product', function (req, res, next) {
 			phone2: $(html).find(".seller_private__telephone").text(),
                         price: $(html).find(".vehicle-price-info--total p").text(),
                         distance: $(html).find(".seller_private__location").text(),
+                        seller: $(html).find(".js-seller-name").text(),
                         details: details,
                     }
                     var obj = {'cars': q, 'data': data}
@@ -196,7 +197,7 @@ app.get('/search_more_products', function (req, res, next) {
                             year_f_v: $(this).attr('value'),
                         }
                     });
-                    $('.sf-accordion__select-options select[name=year-from]').find('option').each(function (i, elem) {
+                    $('.sf-accordion__select-options select[name=year-to]').find('option').each(function (i, elem) {
                         year_t[i] = {
                             year_f_n: $(this).html(),
                             year_f_v: $(this).attr('value'),
